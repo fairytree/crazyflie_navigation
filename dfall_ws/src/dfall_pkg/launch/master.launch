@@ -1,0 +1,49 @@
+<launch>
+
+	<!-- INPUT ARGUMENT FOR EMULATING THE MOTION CAPTURE -->
+	<arg name="emulateMocap" default="false" />
+
+	<!-- Example of how to specify the emulateMocap from command line -->
+    <!-- roslaunch dfall_pkg emulateMocap:=true -->
+
+	<!-- CENTRAL MANAGER -->
+	<node
+		pkg="dfall_pkg"
+		name="CentralManagerService"
+		output="screen"
+		type="CentralManagerService"
+		>
+	</node>
+
+	<!-- VICON DATA PUBLISHER -->
+	<group unless="$(arg emulateMocap)">
+		<node
+			pkg="dfall_pkg"
+			name="ViconDataPublisher"
+			output="screen"
+			type="ViconDataPublisher"
+			>
+			<rosparam command="load" file="$(find dfall_pkg)/param/ViconConfig.yaml" />
+		</node>
+	</group>
+	<group if="$(arg emulateMocap)">
+		<node
+			pkg="dfall_pkg"
+			name="ViconDataPublisher"
+			output="screen"
+			type="MocapEmulator"
+			>
+			<rosparam command="load" file="$(find dfall_pkg)/param/MocapEmulatorConfig.yaml" />
+		</node>
+	</group>
+
+	<!-- SYSTEM CONFIG GUI -->
+	<node
+		pkg="dfall_pkg"
+		name="SystemConfigGUI"
+		output="screen"
+		type="SystemConfigGUI"
+		>
+	</node>
+
+</launch>

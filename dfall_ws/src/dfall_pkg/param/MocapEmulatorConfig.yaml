@@ -1,0 +1,10 @@
+# FREQUENCY OF THE MOTION CAPTURE EMULATOR [Hertz]
+mocap_frequency : 100.0
+
+# QUADRATIC MOTOR REGRESSION EQUATION (a0, a1, a2)
+# > [Newtons] = a2 [cmd]^2 + a1 [cmd] + a0
+motorPoly : [5.484560e-4, 1.032633e-6, 2.130295e-11]
+
+# THE MIN AND MAX FOR SATURATING THE 16-BIT THRUST COMMANDS
+command_sixteenbit_min : 1000
+command_sixteenbit_max : 65000

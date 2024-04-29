@@ -1,0 +1,41 @@
+# The name the controller services advertised by
+# each of the controller nodes.
+defaultController:  "DefaultControllerService/DefaultController"
+studentController:  "StudentControllerService/StudentController"
+tuningController:   "TuningControllerService/TuningController"
+pickerController:   "PickerControllerService/PickerController"
+remoteController:   "RemoteControllerService/RemoteController"
+templateController: "TemplateControllerService/TemplateController"
+csoneController:    "CsoneControllerService/CsoneController"
+tutorialController: "TutorialControllerService/TutorialController"
+
+testMotorsController: "TestMotorsControllerService/TestMotorsController"
+
+# The name of the service advertised by the Default
+# Controller for requests manoeuvres to be performed
+defaultController_requestManoeuvre: "DefaultControllerService/RequestManoeuvre"
+
+# Flags for which measurement streams to use
+shouldUse_mocapMeasurements: true
+shouldUse_onboardEstimate: false
+
+# Flag for whether to use angle for switching
+# to the Default Controller
+isEnabled_strictSafety: true
+maxTiltAngle_for_strictSafety_degrees: 70
+
+# Number of consecutive invalid measurements that
+# will deem the object as "long-term" unavailable
+consecutive_invalid_threshold: 30
+
+# Time out duration after which measurements are
+# considered unavailable
+measurement_timeout_duration: 2.0
+
+# Flag for whether the take-off should be performed
+# with the default controller
+shouldPerfom_takeOff_with_defaultController: true
+
+# Flag for whether the landing should be performed
+# with the default controller
+shouldPerfom_landing_with_defaultController: true

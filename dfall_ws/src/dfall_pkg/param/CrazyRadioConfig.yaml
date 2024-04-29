@@ -1,0 +1,29 @@
+# Frequency of requesting the onboard state estimate, in [milliseconds]
+cfStateEstimate_polling_period: 20
+
+# Flag for whether to use height as a trigger for
+# publishing a motors-OFF command
+isEnabled_strictSafety: false
+maxHeight_for_strictSafety_meters: 1.8
+
+
+# ----------------------------------------------- #
+# THE FOLLOWING ARE USED FOR EMULATING A CRAZYFLIE:
+
+# SIMULATION FREQUENCY FOR EMULATING A CRAZYFLIE
+cfSimulation_frequency: 200
+
+# HOW OFTEN TO PUBLISH THE SIMULATION STATE AS AN
+# ONBOARD ESTIMATE
+# > i.e., this integer divided by the
+#   "cfSimulation_frequency" gives the simulation
+#    equivalent of "cfStateEstimate_polling_period"
+cfSimulation_stateEstimate_sendEvery: 4
+
+# QUADRATIC MOTOR REGRESSION EQUATION (a0, a1, a2)
+# > [Newtons] = a2 [cmd]^2 + a1 [cmd] + a0
+motorPoly : [5.484560e-4, 1.032633e-6, 2.130295e-11]
+
+# THE MIN AND MAX FOR SATURATING THE 16-BIT THRUST COMMANDS
+command_sixteenbit_min : 1000
+command_sixteenbit_max : 65000

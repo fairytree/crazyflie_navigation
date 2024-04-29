@@ -1,0 +1,179 @@
+<body>
+	<div class="body-container">
+		<main style="text-align:left;">
+
+			<br>
+
+			<table class="ros-table">
+
+				<tr>
+					<td class="ros-button-cell">
+						<button
+							class="button-push navy fullwidth"
+							id="buttonRosMasterStatus"
+							onclick="callBashScript_outputLabelID_clearOtherLabels_clickOtherButtons('checkForRosMaster', 'rosMasterStatus', ['rosLaunchMasterStatus','killMasterStatus'], 'buttonRosNodeList')"
+							>
+							Check for ROS Master
+							<div class="div-for-button-highlight-on-touchscreen navy"></div>
+						</button>
+					</td>
+					<td class="ros-info-cell">
+						<div id="rosMasterStatus"></div>
+					</td>
+				</tr>
+
+				<tr>
+					<td class="ros-button-cell">
+						<button
+							class="button-push navy fullwidth"
+							id="buttonLaunchRosMaster"
+							onclick="roslaunch_outputLabelID_clearOtherLabels_clickOtherButtons('master', 'rosLaunchMasterStatus', ['rosMasterStatus','killMasterStatus'], 'buttonRosNodeList')"
+							>
+							Launch ROS Master
+							<div class="div-for-button-highlight-on-touchscreen navy"></div>
+						</button>
+					</td>
+					<td class="ros-info-cell">
+						<div id="rosLaunchMasterStatus"></div>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<table>
+							<td class="switch-cell  pad-right">
+								<div class="on-off-switch type4">
+									<input type="checkbox" id="checkboxEmulateMocap"><label for="checkboxEmulateMocap"></label>
+								</div>
+							</td>
+							<td class="ros-info-cell">
+								Emulate motion capture
+							</td>
+						</table>
+					</td>
+					<td class="ros-info-cell">
+						&nbsp
+					</td>
+				</tr>
+				<tr>
+					<td class="ros-button-cell">
+						<button
+							class="button-push red fullwidth"
+							id="buttonKillRosMaster"
+							onclick="callBashScript_outputLabelID_clearOtherLabels_clickOtherButtons('killRosMaster', 'killMasterStatus', ['rosMasterStatus','rosLaunchMasterStatus'], 'buttonRosNodeList')"
+							>
+							Kill ROS Master
+							<div class="div-for-button-highlight-on-touchscreen red"></div>
+						</button>
+					</td>
+					<td class="ros-info-cell">
+						<div id="killMasterStatus"></div>
+					</td>
+				</tr>
+
+			</table>
+
+			<br>
+			<hr class="hr-basic navy">
+			<br>
+
+			<table class="ros-table">
+
+				<tr>
+					<td class="ros-button-cell">
+						<button
+							class="button-push navy fullwidth"
+							id="buttonRosAgentStatus"
+							onclick="callBashScript_outputLabelID_clearOtherLabels_clickOtherButtons('checkForRosAgent', 'rosAgentStatus', ['rosLaunchAgentStatus','killAgentStatus'], 'buttonRosNodeList')"
+							>
+							Check for ROS Agent
+							<div class="div-for-button-highlight-on-touchscreen navy"></div>
+						</button>
+					</td>
+					<td class="ros-info-cell">
+						<div id="rosAgentStatus"></div>
+					</td>
+				</tr>
+
+				<tr>
+					<td class="ros-button-cell">
+						<button
+							class="button-push navy fullwidth"
+							id="buttonLaunchRosAgent"
+							onclick="roslaunch_outputLabelID_clearOtherLabels_clickOtherButtons('agent', 'rosLaunchAgentStatus', ['rosAgentStatus','killAgentStatus'], 'buttonRosNodeList')"
+							>
+							Launch ROS Agent
+							<div class="div-for-button-highlight-on-touchscreen navy"></div>
+						</button>
+					</td>
+					<td class="ros-info-cell">
+						<div id="rosLaunchAgentStatus"></div>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<table>
+							<td class="switch-cell pad-right">
+								<div class="on-off-switch type4">
+									<input type="checkbox" id="checkboxEmulateCrazyRadio"><label for="checkboxEmulateCrazyRadio"></label>
+								</div>
+							</td>
+							<td class="ros-info-cell">
+								Emulate CrazyRadio
+							</td>
+						</table>
+					</td>
+					<td class="ros-info-cell">
+						&nbsp
+					</td>
+				</tr>
+				<tr>
+					<td class="ros-button-cell">
+						<button
+							class="button-push red fullwidth"
+							id="buttonKillRosAgent"
+							onclick="callBashScript_outputLabelID_clearOtherLabels_clickOtherButtons('killRosAgent', 'killAgentStatus', ['rosAgentStatus','rosLaunchAgentStatus'], 'buttonRosNodeList')"
+							>
+							Kill ROS Agent
+							<div class="div-for-button-highlight-on-touchscreen red"></div>
+						</button>
+					</td>
+					<td class="ros-info-cell">
+						<div id="killAgentStatus"></div>
+					</td>
+				</tr>
+
+			</table>
+
+			<br>
+			<hr class="hr-basic navy">
+			<br>
+
+			<table class="ros-table">
+
+				<tr>
+					<td class="ros-button-cell">
+						<button
+							class="button-push navy fullwidth"
+							id ="buttonRosNodeList"
+							onclick="callBashScript_outputLabelID_clearOtherLabels_clickOtherButtons('rosnodeList', 'rosnodeList', null, null)"
+							>
+							List ROS Nodes
+							<div class="div-for-button-highlight-on-touchscreen navy"></div>
+						</button>
+					</td>
+					<td></td>
+				</tr>
+				
+			</table>
+
+			<table class="ros-table">
+				<tr>
+					<td class="ros-info-cell" style="height:100px;vertical-align:text-top;">
+						<div id="rosnodeList"></div>
+					</td>
+				</tr>
+			</table>
+
+		</main>
+	</div>
+</body>

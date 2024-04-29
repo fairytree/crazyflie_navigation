@@ -1,0 +1,26 @@
+# Mass of the Crazyflie
+mass : 30
+
+# Frequency of the controller, in hertz
+control_frequency : 200
+
+# The default setpoint, the ordering is (x, y, z),
+# with unit [meters, meters, meters]
+default_setpoint : [0.0, 0.0, 0.4]
+
+# MPC prediction horizon, in discrete time steps
+prediction_horizon: 100
+
+# MPC state cost matrix diagonal entries, the ordering is (x, y, z, xdot, ydot, zdot, roll, pitch)
+state_cost_diagonals: [10.0, 10.0, 40.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+
+# MPC input cost matrix diagonal entries, the ordering is (totalThrust, rollRate, pitchRate)
+input_cost_diagonals: [1.0, 1.0, 1.0]
+
+# MPC state constraints, the ordering is (x, y, z, xdot, ydot, zdot, roll, pitch)
+min_state_constraints: [-2.0, -2.0, 0.1, -100, -100, -100, -0.5236, -0.5236]
+max_state_constraints: [2.0, 2.0, 3.0, 100, 100, 100, 0.5236, 0.5236]
+
+# MPC input constraints, the ordering is (totalThrust, rollRate, pitchRate)
+min_input_constraints: [0.1597, -1.5708, -1.5708]
+max_input_constraints: [0.4791, 1.5708, 1.5708]

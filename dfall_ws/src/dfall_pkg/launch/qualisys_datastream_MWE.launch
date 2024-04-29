@@ -1,0 +1,32 @@
+<launch>
+
+	<!-- INPUT ARGUMENT OF THE AGENT's ID -->
+	<arg name="agentID" default="$(optenv DFALL_DEFAULT_AGENT_ID)" />
+
+	<!-- INPUT ARGUMENT OF THE COORDINATOR's ID -->
+	<arg name="coordID" default="$(optenv DFALL_DEFAULT_COORD_ID)" />
+
+	<!-- INPUT ARGUMENT FOR LAUNCHING A GUI OR NOT -->
+	<arg name="withGUI" default="true" />
+
+	<!-- Example of how to use the value in agentID -->
+	<!-- <param name="param" value="$(arg agentID)"/> -->
+
+	<!-- Example of how to specify the agentID from command line -->
+	<!-- roslaunch dfall_pkg agentID:=1 -->
+
+	<group ns="$(eval 'agent' + str(agentID).zfill(3))">
+
+		<!-- QUALISYS DATA PUBLISHER -->
+		<node
+			pkg    = "dfall_pkg"
+			name   = "QualisysDataPublisherMWE"
+			output = "screen"
+			type   = "QualisysDataPublisherMWE.py"
+			>
+			<rosparam command="load" file="$(find dfall_pkg)/param/QualisysConfig.yaml" />
+		</node>
+
+	</group>
+
+</launch>

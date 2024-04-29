@@ -1,0 +1,14 @@
+# Mass of the crazyflie (32g based on measuring a crazyflie 2.1 with flowdeck and battery with kitchen scale)
+mass : 28
+
+# Frequency of the controller, in hertz (should be 200Hz for in-class and 50Hz for at-home)
+control_frequency : 200
+
+# The default setpoint, the ordering is (x,y,z,yaw),
+# with unit [meters,meters,meters,radians]
+default_setpoint : [0.0, 0.0, 0.4, 0.0]
+
+# PID controller gain matrices
+proportionalgain_for_z : 4
+derivativegain_for_z : 1
+integralgain_for_z : 0.5

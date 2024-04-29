@@ -1,0 +1,12 @@
+uint16 motorCmd1
+uint16 motorCmd2
+uint16 motorCmd3
+uint16 motorCmd4
+uint8 xControllerMode
+uint8 yControllerMode
+uint8 zControllerMode
+uint8 yawControllerMode
+float32 xControllerSetpoint
+float32 yControllerSetpoint
+float32 zControllerSetpoint
+float32 yawControllerSetpoint

@@ -1,0 +1,410 @@
+<br>
+
+<button
+	class="button-push navy fullwidth"
+	id="buttonControlEnableStudent"
+	onclick="sendRosMessage_outputLabelID('enablestudent', 'labelControlEnableStudent')"
+	>
+	enable
+	<div class="div-for-button-highlight-on-touchscreen navy"></div>
+</button>
+<div
+	style="text-align: center; display: block;"
+	id="labelControlEnableStudent"
+	>
+	&nbsp
+</div>
+
+<hr class="hr-basic navy">
+
+<h2 style="text-align: center;">
+	Adjust Setpoint
+</h2>
+
+<table style="margin-left: auto; margin-right: auto;">
+	<tr>
+		<td class="setpoint-label-cell">
+			x [m]
+		</td>
+		<td class="setpoint-increment-cell">
+			<button
+				class="button-push navy slim short10"
+				id="buttonDecrementControlStudentSetpointX"
+				onclick="incrementInputFieldWithGivenID('inputControlStudentSetpointX', -1.0 )"
+				>
+				-
+				<div class="div-for-button-highlight-on-touchscreen navy"></div>
+			</button>
+		</td>
+		<td class="setpoint-input-field-cell">
+			<input
+				class="setpoint-input-field"
+				id="inputControlStudentSetpointX"
+				type="text"
+				name="x"
+				value="0"
+				step="0.1"
+				pattern="^[-+]?\d*(\.)?(\d?)*"
+				inputmode="none"
+				>
+		</td>
+		<td class="setpoint-increment-cell">
+			<button
+				class="button-push navy slim short10"
+				id="buttonIncrementControlStudentSetpointX"
+				onclick="incrementInputFieldWithGivenID('inputControlStudentSetpointX', 1.0 )"
+				>
+				+
+				<div class="div-for-button-highlight-on-touchscreen navy"></div>
+			</button>
+		</td>
+	</tr>
+	<tr>
+		<td class="setpoint-label-cell">
+			y [m]
+		</td>
+		<td class="setpoint-increment-cell">
+			<button
+				class="button-push navy slim short10"
+				id="buttonDecrementControlStudentSetpointY"
+				onclick="incrementInputFieldWithGivenID('inputControlStudentSetpointY', -1.0 )"
+				>
+				-
+				<div class="div-for-button-highlight-on-touchscreen navy"></div>
+			</button>
+		</td>
+		<td class="setpoint-input-field-cell">
+			<input
+				class="setpoint-input-field"
+				id="inputControlStudentSetpointY"
+				type="text"
+				name="y"
+				value="0"
+				step="0.1"
+				pattern="^[-+]?\d*(\.)?(\d?)*"
+				inputmode="none"
+				>
+		</td>
+		<td class="setpoint-increment-cell">
+			<button
+				class="button-push navy slim short10"
+				id="buttonIncrementControlStudentSetpointY"
+				onclick="incrementInputFieldWithGivenID('inputControlStudentSetpointY', 1.0 )"
+				>
+				+
+				<div class="div-for-button-highlight-on-touchscreen navy"></div>
+			</button>
+		</td>
+	</tr>
+	<tr>
+		<td class="setpoint-label-cell">
+			z [m]
+		</td>
+		<td class="setpoint-increment-cell">
+			<button
+				class="button-push navy slim short10"
+				id="buttonDecrementControlStudentSetpointZ"
+				onclick="incrementInputFieldWithGivenID('inputControlStudentSetpointZ', -1.0 )"
+				>
+				-
+				<div class="div-for-button-highlight-on-touchscreen navy"></div>
+			</button>
+		</td>
+		<td class="setpoint-input-field-cell">
+			<input
+				class="setpoint-input-field"
+				id="inputControlStudentSetpointZ"
+				type="text"
+				name="z"
+				value="0.4"
+				step="0.1"
+				pattern="^[-+]?\d*(\.)?(\d?)*"
+				inputmode="none"
+				>
+		</td>
+		<td class="setpoint-increment-cell">
+			<button
+				class="button-push navy slim short10"
+				id="buttonIncrementControlStudentSetpointZ"
+				onclick="incrementInputFieldWithGivenID('inputControlStudentSetpointZ', 1.0 )"
+				>
+				+
+				<div class="div-for-button-highlight-on-touchscreen navy"></div>
+			</button>
+		</td>
+	</tr>
+	<tr>
+		<td class="setpoint-label-cell">
+			yaw [deg]
+		</td>
+		<td class="setpoint-increment-cell">
+			<button
+				class="button-push navy slim short10"
+				id="buttonDecrementControlStudentSetpointYaw"
+				onclick="incrementInputFieldWithGivenID('inputControlStudentSetpointYaw', -1.0 )"
+				>
+				-
+				<div class="div-for-button-highlight-on-touchscreen navy"></div>
+			</button>
+		</td>
+		<td class="setpoint-input-field-cell">
+			<input
+				class="setpoint-input-field"
+				id="inputControlStudentSetpointYaw"
+				type="text"
+				name="yaw"
+				value="0"
+				step="5"
+				pattern="^[-+]?\d*(\.)?(\d?)*"
+				inputmode="none"
+				>
+		</td>
+		<td class="setpoint-increment-cell">
+			<button
+				class="button-push navy slim short10"
+				id="buttonIncrementControlStudentSetpointYaw"
+				onclick="incrementInputFieldWithGivenID('inputControlStudentSetpointYaw', 1.0 )"
+				>
+				+
+				<div class="div-for-button-highlight-on-touchscreen navy"></div>
+			</button>
+		</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td></td>
+		<td>
+			<button
+				class="button-push navy fullwidth"
+				id="buttonControlStudentSetSetpoint"
+				onclick="setSetpointViaRosMessage_outputLabelID('student', 'inputControlStudentSetpoint', 'labelControlStudentSetSetpoint' )"
+				>
+				set
+				<div class="div-for-button-highlight-on-touchscreen navy"></div>
+			</button>
+		</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td></td>
+		<td></td>
+		<td>
+			<div
+				style="text-align: center;"
+				id="labelControlStudentSetSetpoint"
+				>
+				&nbsp
+			</div>
+		</td>
+		<td></td>
+	</tr>
+</table>
+
+<hr class="hr-basic navy">
+
+<br>
+
+<table class="mse-table">
+	<tr>
+		<td></td>
+		<td class="mse-column-title-cell">
+			<span class="mse-column-title-span-full-text">Measured<br>Pose</span>
+			<span class="mse-column-title-span-short-text">Meas.<br>Pose</span>
+		</td>
+		<td class="mse-column-title-cell">
+			<span class="mse-column-title-span-full-text">Error</span>
+			<span class="mse-column-title-span-short-text">Error</span>
+		</td>
+		<td class="mse-column-title-cell">
+			<span class="mse-column-title-span-full-text">Current<br>Setpoint</span>
+			<span class="mse-column-title-span-short-text">Curr.<br>Setp.</span>
+		</td>
+	</tr>
+	<tr>
+		<td class="mse-row-title-cell">
+			x
+		</td>
+		<td class="mse-data-cell" id="student-measurement-x">xx.xx</td>
+		<td class="mse-data-cell" id="student-error-x">xx.xx</td>
+		<td class="mse-data-cell" id="student-setpoint-x">xx.xx</td>
+	</tr>
+	<tr>
+		<td class="mse-row-title-cell">
+			y
+		</td>
+		<td class="mse-data-cell" id="student-measurement-y">xx.xx</td>
+		<td class="mse-data-cell" id="student-error-y">xx.xx</td>
+		<td class="mse-data-cell" id="student-setpoint-y">xx.xx</td>
+	</tr>
+	<tr>
+		<td class="mse-row-title-cell">
+			z
+		</td>
+		<td class="mse-data-cell" id="student-measurement-z">xx.xx</td>
+		<td class="mse-data-cell" id="student-error-z">xx.xx</td>
+		<td class="mse-data-cell" id="student-setpoint-z">xx.xx</td>
+	</tr>
+	<tr>
+		<td class="mse-row-title-cell">
+			yaw
+		</td>
+		<td class="mse-data-cell" id="student-measurement-yaw">xx.xx</td>
+		<td class="mse-data-cell" id="student-error-yaw">xx.xx</td>
+		<td class="mse-data-cell" id="student-setpoint-yaw">xx.xx</td>
+	</tr>
+	<tr>
+		<td class="mse-row-title-cell">
+			pitch
+		</td>
+		<td class="mse-data-cell" id="student-measurement-pitch">xx.xx</td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td class="mse-row-title-cell">
+			roll
+		</td>
+		<td class="mse-data-cell" id="student-measurement-roll">xx.xx</td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td colspan="4" class="mse-caption-below">
+			<b>NOTES:</b>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="4" class="mse-caption-below">
+			<b>(x,y,z)</b> in meters
+		</td>
+	</tr>
+	<tr>
+		<td colspan="4" class="mse-caption-below">
+			<b>(roll,pitch,yaw)</b> in degrees
+		</td>
+	</tr>
+	<tr>
+		<td colspan="4" class="mse-caption-below">
+			<b>error =</b> measured - setpoint
+		</td>
+	</tr>
+	<tr>
+		<td colspan="4" class="mse-caption-below">
+			<b>~2Hz</b> data refresh rate
+		</td>
+	</tr>
+</table>
+
+<br>
+
+<hr class="hr-basic navy">
+
+<table class="git-table">
+	<tr>
+		<td class="git-button-cell">
+			<button
+				class="button-push navy fullwidth"
+				id="buttonLoadYamlStudent"
+				onclick="sendRosMessage_outputLabelID('loadyamlstudent', 'labelLoadYamlStudent')"
+				>
+				Load YAML Paramters for Student Controller
+				<div class="div-for-button-highlight-on-touchscreen navy"></div>
+			</button>
+		</td>
+	</tr>
+	<tr>
+		<td
+			style="text-align: center;"
+			id="labelLoadYamlStudent"
+			>
+			&nbsp
+		</td>
+	</tr>
+</table>
+
+<hr class="hr-basic navy">
+
+<br>
+
+<h2 style="text-align: center;">
+	Debug Values
+</h2>
+
+<table class="debug-values-table">
+	<tr>
+		<td></td>
+		<td class="debug-values-row-title-cell">
+			Value 1
+		</td>
+		<td class="debug-values-data-cell" id="debug-value1">xx.xx</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td class="debug-values-row-title-cell">
+			Value 2
+		</td>
+		<td class="debug-values-data-cell" id="debug-value2">xx.xx</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td class="debug-values-row-title-cell">
+			Value 3
+		</td>
+		<td class="debug-values-data-cell" id="debug-value3">xx.xx</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td class="debug-values-row-title-cell">
+			Value 4
+		</td>
+		<td class="debug-values-data-cell" id="debug-value4">xx.xx</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td class="debug-values-row-title-cell">
+			Value 5
+		</td>
+		<td class="debug-values-data-cell" id="debug-value5">xx.xx</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td class="debug-values-row-title-cell">
+			Value 6
+		</td>
+		<td class="debug-values-data-cell" id="debug-value6">xx.xx</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td class="debug-values-row-title-cell">
+			Value 7
+		</td>
+		<td class="debug-values-data-cell" id="debug-value7">xx.xx</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td class="debug-values-row-title-cell">
+			Value 8
+		</td>
+		<td class="debug-values-data-cell" id="debug-value8">xx.xx</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td class="debug-values-row-title-cell">
+			Value 9
+		</td>
+		<td class="debug-values-data-cell" id="debug-value9">xx.xx</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td class="debug-values-row-title-cell">
+			Value 10
+		</td>
+		<td class="debug-values-data-cell" id="debug-value10">xx.xx</td>
+	</tr>
+</table>
+
+<br>
+
+<hr class="hr-basic navy">
+
+<br><br><br><br>

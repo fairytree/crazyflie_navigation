@@ -1,0 +1,4 @@
+string vehicleName
+float64 rollrate
+float64 pitchrate
+float64 yawrate

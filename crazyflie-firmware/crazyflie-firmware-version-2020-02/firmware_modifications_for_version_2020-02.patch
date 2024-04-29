@@ -1,0 +1,658 @@
+diff --git a/src/modules/interface/attitude_controller.h b/src/modules/interface/attitude_controller.h
+index fe25dc0..fd69bdc 100644
+--- a/src/modules/interface/attitude_controller.h
++++ b/src/modules/interface/attitude_controller.h
+@@ -63,6 +63,11 @@ void attitudeControllerResetRollAttitudePID(void);
+  */
+ void attitudeControllerResetPitchAttitudePID(void);
+ 
++/**
++ * Reset controller yaw attitude PID
++ */
++void attitudeControllerResetYawAttitudePID(void);
++
+ /**
+  * Reset controller roll, pitch and yaw PID's.
+  */
+diff --git a/src/modules/interface/stabilizer_types.h b/src/modules/interface/stabilizer_types.h
+index fc3e378..c51fdbd 100644
+--- a/src/modules/interface/stabilizer_types.h
++++ b/src/modules/interface/stabilizer_types.h
+@@ -159,6 +159,10 @@ typedef struct control_s {
+   int16_t pitch;
+   int16_t yaw;
+   float thrust;
++  uint16_t cmd1;
++  uint16_t cmd2;
++  uint16_t cmd3;
++  uint16_t cmd4;
+ } control_t;
+ 
+ typedef enum mode_e {
+@@ -174,11 +178,17 @@ typedef struct setpoint_s {
+   attitude_t attitudeRate;  // deg/s
+   quaternion_t attitudeQuaternion;
+   float thrust;
++  uint16_t cmd1;
++  uint16_t cmd2;
++  uint16_t cmd3;
++  uint16_t cmd4;
+   point_t position;         // m
+   velocity_t velocity;      // m/s
+   acc_t acceleration;       // m/s^2
+   bool velocity_body;       // true if velocity is given in body frame; false if velocity is given in world frame
+ 
++  bool useDfallAdjustmentsToControllerPID;
++
+   struct {
+     stab_mode_t x;
+     stab_mode_t y;
+diff --git a/src/modules/src/attitude_pid_controller.c b/src/modules/src/attitude_pid_controller.c
+index b7d707e..bcb02bc 100644
+--- a/src/modules/src/attitude_pid_controller.c
++++ b/src/modules/src/attitude_pid_controller.c
+@@ -145,6 +145,11 @@ void attitudeControllerResetPitchAttitudePID(void)
+     pidReset(&pidPitch);
+ }
+ 
++void attitudeControllerResetYawAttitudePID(void)
++{
++    pidReset(&pidYaw);
++}
++
+ void attitudeControllerResetAllPID(void)
+ {
+   pidReset(&pidRoll);
+diff --git a/src/modules/src/controller_pid.c b/src/modules/src/controller_pid.c
+index f4ecb75..673b5cc 100644
+--- a/src/modules/src/controller_pid.c
++++ b/src/modules/src/controller_pid.c
+@@ -132,6 +132,9 @@ void controllerPid(control_t *control, setpoint_t *setpoint,
+     control->thrust = actuatorThrust;
+   }
+ 
++  // The following "if (control->thrust == 0)" block is commented
++  // out because it is replaced with what follows after.
++  /*
+   if (control->thrust == 0)
+   {
+     control->thrust = 0;
+@@ -150,6 +153,92 @@ void controllerPid(control_t *control, setpoint_t *setpoint,
+     // Reset the calculated YAW angle for rate control
+     attitudeDesired.yaw = state->attitude.yaw;
+   }
++  */
++
++  // The following "if:then:else" statements is used to
++  // specify the "control->cmd{1,2,3,4}" depending on
++  // the boolean:
++  // >> "setpoint->useDfallAdjustmentsToControllerPID"
++  if (setpoint->useDfallAdjustmentsToControllerPID)
++  {
++    // Set the {roll,pitch,yaw} commands to zero
++    // if indicated by the respective mode
++    if (setpoint->mode.roll == modeDisable)
++    {
++      control->roll = 0;
++      cmd_roll = 0.0;
++    }
++    if (setpoint->mode.pitch == modeDisable)
++    {
++      control->pitch = 0;
++      cmd_pitch = 0.0;
++    }
++    if (setpoint->mode.yaw == modeDisable)
++    {
++      control->yaw = 0;
++      cmd_yaw = 0.0;
++    }
++    // Apply the per-motor commands differently
++    // depending on the Z-controller mode
++    if (setpoint->mode.z == modeDisable)
++    {
++      // Copy across the per motor commands
++      control->cmd1 = setpoint->cmd1;
++      control->cmd2 = setpoint->cmd2;
++      control->cmd3 = setpoint->cmd3;
++      control->cmd4 = setpoint->cmd4;
++    }
++    else
++    {
++      // Add the setpoints on top of the
++      // "control thrust" computed by the
++      // PID controllers above
++      control->cmd1 = setpoint->cmd1 + control->thrust;
++      control->cmd2 = setpoint->cmd2 + control->thrust;
++      control->cmd3 = setpoint->cmd3 + control->thrust;
++      control->cmd4 = setpoint->cmd4 + control->thrust;
++    }
++  }
++  // Otherwise, "setpoint->useDfallAdjustmentsToControllerPID == false"
++  else
++  {
++    // Put the thrust value onto each motor
++    control->cmd1 = control->thrust;
++    control->cmd2 = control->thrust;
++    control->cmd3 = control->thrust;
++    control->cmd4 = control->thrust;
++  }
++
++  // If all control commands are zero, i.e., if:
++  // >> "control->cmd{1,2,3,4}==0"
++  // then set all commands to zero and to reset
++  // all PIDs.
++  bool isZeroThrust = ((control->cmd1 == 0 && control->cmd2 == 0 && control->cmd3 == 0 && control->cmd4 == 0));
++  if (isZeroThrust)
++  {
++    // Set all commands to zero
++    control->cmd1 = 0;
++    control->cmd2 = 0;
++    control->cmd3 = 0;
++    control->cmd4 = 0;
++    control->thrust = 0;
++    control->roll = 0;
++    control->pitch = 0;
++    control->yaw = 0;
++
++    // Reset all PIDs
++    attitudeControllerResetAllPID();
++    positionControllerResetAllPID();
++
++    // Reset the calculated YAW angle for rate control
++    attitudeDesired.yaw = state->attitude.yaw;
++
++    // Update also the log variables to reflect this
++    cmd_thrust = 0.0;
++    cmd_roll = 0.0;
++    cmd_pitch = 0.0;
++    cmd_yaw = 0.0;
++  }
+ }
+ 
+ 
+diff --git a/src/modules/src/crtp_commander_generic.c b/src/modules/src/crtp_commander_generic.c
+index 1662fe4..f6931a4 100644
+--- a/src/modules/src/crtp_commander_generic.c
++++ b/src/modules/src/crtp_commander_generic.c
+@@ -71,6 +71,7 @@ enum packet_type {
+   hoverType         = 5,
+   fullStateType     = 6,
+   positionType      = 7,
++  dfallType         = 8,
+ };
+ 
+ /* ---===== 2 - Decoding functions =====--- */
+@@ -112,6 +113,9 @@ static void velocityDecoder(setpoint_t *setpoint, uint8_t type, const void *data
+   setpoint->mode.yaw = modeVelocity;
+ 
+   setpoint->attitudeRate.yaw = -values->yawrate;
++
++  // Turn off the "dfall mode adjustments"
++  setpoint->useDfallAdjustmentsToControllerPID = false;
+ }
+ 
+ /* zDistanceDecoder
+@@ -145,6 +149,9 @@ static void zDistanceDecoder(setpoint_t *setpoint, uint8_t type, const void *dat
+ 
+   setpoint->attitude.roll = values->roll;
+   setpoint->attitude.pitch = values->pitch;
++
++  // Turn off the "dfall mode adjustments"
++  setpoint->useDfallAdjustmentsToControllerPID = false;
+ }
+ 
+ /* cppmEmuDecoder
+@@ -230,6 +237,9 @@ static void cppmEmuDecoder(setpoint_t *setpoint, uint8_t type, const void *data,
+   {
+     setpoint->thrust = 0;
+   }
++
++  // Turn off the "dfall mode adjustments"
++  setpoint->useDfallAdjustmentsToControllerPID = false;
+ }
+ 
+ /* altHoldDecoder
+@@ -263,6 +273,9 @@ static void altHoldDecoder(setpoint_t *setpoint, uint8_t type, const void *data,
+ 
+   setpoint->attitude.roll = values->roll;
+   setpoint->attitude.pitch = values->pitch;
++
++  // Turn off the "dfall mode adjustments"
++  setpoint->useDfallAdjustmentsToControllerPID = false;
+ }
+ 
+ /* hoverDecoder
+@@ -294,6 +307,9 @@ static void hoverDecoder(setpoint_t *setpoint, uint8_t type, const void *data, s
+   setpoint->velocity.y = values->vy;
+ 
+   setpoint->velocity_body = true;
++
++  // Turn off the "dfall mode adjustments"
++  setpoint->useDfallAdjustmentsToControllerPID = false;
+ }
+ 
+ struct fullStatePacket_s {
+@@ -338,6 +354,9 @@ static void fullStateDecoder(setpoint_t *setpoint, uint8_t type, const void *dat
+   setpoint->mode.roll = modeDisable;
+   setpoint->mode.pitch = modeDisable;
+   setpoint->mode.yaw = modeDisable;
++
++  // Turn off the "dfall mode adjustments"
++  setpoint->useDfallAdjustmentsToControllerPID = false;
+ }
+ 
+ /* positionDecoder
+@@ -365,6 +384,313 @@ static void positionDecoder(setpoint_t *setpoint, uint8_t type, const void *data
+   setpoint->mode.yaw = modeAbs;
+ 
+   setpoint->attitude.yaw = values->yaw;
++
++  // Turn off the "dfall mode adjustments"
++  setpoint->useDfallAdjustmentsToControllerPID = false;
++}
++
++/* dfall mode decoder
++ * set the mode of the onboard {x,y,z,roll,pitch,yaw}
++ * controllers based on the mode specification
++ * contained in the packet. A separate mode is
++ * specified for each of the four independent
++ * coordinates of {x,y,z,yaw}
++ */
++
++#define DFALL_CONTROLLER_MODE_OFF            0
++#define DFALL_CONTROLLER_MODE_ANGULAR_RATE   1
++#define DFALL_CONTROLLER_MODE_ANGLE          2
++#define DFALL_CONTROLLER_MODE_VELOCITY       3
++#define DFALL_CONTROLLER_MODE_POSITION       4
++
++struct dfallPacket_s {
++    uint16_t controllerModes;
++    uint16_t cmd1;
++    uint16_t cmd2;
++    uint16_t cmd3;
++    uint16_t cmd4;
++    float xControllerSetpoint;
++    float yControllerSetpoint;
++    float zControllerSetpoint;
++    float yawControllerSetpoint;
++} __attribute__((packed));
++
++static void dfallDecoder(setpoint_t *setpoint, uint8_t type, const void *data, size_t datalen)
++{
++  const struct dfallPacket_s *values = data;
++  ASSERT(datalen == sizeof(struct dfallPacket_s));
++
++  // DECODE THE 16-BIT INTEGER THAT ENCODES
++  // THE REQUESTED {x,y,z,yaw} CONTROLLER MODES
++  // > Each mode is encoded using 3 bits, stacked together as follows:
++  // ---------------------------------------------------------------
++  // |BIT   | 15 14 13 12 | 11 10  9 | 8  7  6 | 5  4  3 | 2  1  0 |
++  // |DESC. | free bits   | yaw_mode | z_mode  | y_mode  | x_mode  |
++  // ---------------------------------------------------------------
++
++  uint16_t mode_selector_bits = 7;
++
++  // EXTRACT THE MODE FOR EACH CONTROLLER
++  uint8_t x_controller_mode   = (values->controllerModes >> 0) & mode_selector_bits;
++  uint8_t y_controller_mode   = (values->controllerModes >> 3) & mode_selector_bits;
++  uint8_t z_controller_mode   = (values->controllerModes >> 6) & mode_selector_bits;
++  uint8_t yaw_controller_mode = (values->controllerModes >> 9) & mode_selector_bits;
++
++  // INITIALISE A BOOLEAN FOR TRACKING IF ANY
++  // OF THE CONTROLLER MODES ARE INVALID
++  bool invalid_controller_mode_requested = false;
++
++  // PROCESS THE X CONTROLLER
++  switch (x_controller_mode)
++  {
++    case DFALL_CONTROLLER_MODE_ANGULAR_RATE:
++      // Set the modes
++      setpoint->mode.x     = modeDisable;
++      setpoint->mode.pitch = modeVelocity;
++      // Set the setpoint
++      setpoint->position.x         = 0.0;
++      setpoint->velocity.x         = 0.0;
++      setpoint->attitude.pitch     = 0.0;
++      setpoint->attitudeRate.pitch = values->xControllerSetpoint;
++      break;
++
++    case DFALL_CONTROLLER_MODE_ANGLE:
++      // Set the modes
++      setpoint->mode.x     = modeDisable;
++      setpoint->mode.pitch = modeAbs;
++      // Set the setpoints
++      setpoint->position.x         = 0.0;
++      setpoint->velocity.x         = 0.0;
++      setpoint->attitude.pitch     = values->xControllerSetpoint;
++      setpoint->attitudeRate.pitch = 0.0;
++      break;
++
++    case DFALL_CONTROLLER_MODE_VELOCITY:
++      // Set the modes
++      setpoint->mode.x     = modeVelocity;
++      setpoint->mode.pitch = modeAbs;
++      // Set the setpoints
++      setpoint->position.x         = 0.0;
++      setpoint->velocity.x         = values->xControllerSetpoint;
++      setpoint->attitude.pitch     = 0.0;
++      setpoint->attitudeRate.pitch = 0.0;
++      break;
++
++    case DFALL_CONTROLLER_MODE_POSITION:
++      // Set the modes
++      setpoint->mode.x     = modeAbs;
++      setpoint->mode.pitch = modeAbs;
++      // Set the setpoints
++      setpoint->position.x         = values->xControllerSetpoint;
++      setpoint->velocity.x         = 0.0;
++      setpoint->attitude.pitch     = 0.0;
++      setpoint->attitudeRate.pitch = 0.0;
++      break;
++
++    case DFALL_CONTROLLER_MODE_OFF:
++      // Set the modes
++      setpoint->mode.x     = modeDisable;
++      setpoint->mode.pitch = modeDisable;
++      // Set the setpoints
++      setpoint->position.x         = 0.0;
++      setpoint->velocity.x         = 0.0;
++      setpoint->attitude.pitch     = 0.0;
++      setpoint->attitudeRate.pitch = 0.0;
++      break;
++
++    default:
++      // Set the flag that an invalid mode
++      // was requested
++      invalid_controller_mode_requested = true;
++      break;
++  }
++
++  // PROCESS THE Y CONTROLLER
++  switch (y_controller_mode)
++  {
++    case DFALL_CONTROLLER_MODE_ANGULAR_RATE:
++      // Set the modes
++      setpoint->mode.y    = modeDisable;
++      setpoint->mode.roll = modeVelocity;
++      // Set the setpoint
++      setpoint->position.y        = 0.0;
++      setpoint->velocity.y        = 0.0;
++      setpoint->attitude.roll     = 0.0;
++      setpoint->attitudeRate.roll = values->yControllerSetpoint;
++      break;
++
++    case DFALL_CONTROLLER_MODE_ANGLE:
++      // Set the modes
++      setpoint->mode.y    = modeDisable;
++      setpoint->mode.roll = modeAbs;
++      // Set the setpoints
++      setpoint->position.y        = 0.0;
++      setpoint->velocity.y        = 0.0;
++      setpoint->attitude.roll     = values->yControllerSetpoint;
++      setpoint->attitudeRate.roll = 0.0;
++      break;
++
++    case DFALL_CONTROLLER_MODE_VELOCITY:
++      // Set the modes
++      setpoint->mode.y    = modeVelocity;
++      setpoint->mode.roll = modeAbs;
++      // Set the setpoints
++      setpoint->position.y        = 0.0;
++      setpoint->velocity.y        = values->yControllerSetpoint;
++      setpoint->attitude.roll     = 0.0;
++      setpoint->attitudeRate.roll = 0.0;
++      break;
++
++    case DFALL_CONTROLLER_MODE_POSITION:
++      // Set the modes
++      setpoint->mode.y    = modeAbs;
++      setpoint->mode.roll = modeAbs;
++      // Set the setpoints
++      setpoint->position.y        = values->yControllerSetpoint;
++      setpoint->velocity.y        = 0.0;
++      setpoint->attitude.roll     = 0.0;
++      setpoint->attitudeRate.roll = 0.0;
++      break;
++
++    case DFALL_CONTROLLER_MODE_OFF:
++      // Set the modes
++      setpoint->mode.y    = modeDisable;
++      setpoint->mode.roll = modeDisable;
++      // Set the setpoints
++      setpoint->position.y        = 0.0;
++      setpoint->velocity.y        = 0.0;
++      setpoint->attitude.roll     = 0.0;
++      setpoint->attitudeRate.roll = 0.0;
++      break;
++
++    default:
++      // Set the flag that an invalid mode
++      // was requested
++      invalid_controller_mode_requested = true;
++      break;
++  }
++
++  // PROCESS THE Z CONTROLLER
++  switch (z_controller_mode)
++  {
++    case DFALL_CONTROLLER_MODE_VELOCITY:
++      // Set the mode
++      setpoint->mode.z = modeVelocity;
++      // Set the setpoints
++      setpoint->position.z = 0.0;
++      setpoint->velocity.z = values->zControllerSetpoint;
++      break;
++
++    case DFALL_CONTROLLER_MODE_POSITION:
++      // Set the mode
++      setpoint->mode.z = modeAbs;
++      // Set the setpoints
++      setpoint->position.z = values->zControllerSetpoint;
++      setpoint->velocity.z = 0.0;
++      break;
++
++    case DFALL_CONTROLLER_MODE_OFF:
++      // Set the mode
++      setpoint->mode.z = modeDisable;
++      // Set the setpoints
++      setpoint->position.z = 0.0;
++      setpoint->velocity.z = 0.0;
++      break;
++
++    case DFALL_CONTROLLER_MODE_ANGULAR_RATE:
++    case DFALL_CONTROLLER_MODE_ANGLE:
++    default:
++      // Set the flag that an invalid mode
++      // was requested
++      invalid_controller_mode_requested = true;
++      break;
++  }
++
++  // PROCESS THE YAW CONTROLLER
++  switch (yaw_controller_mode)
++  {
++    case DFALL_CONTROLLER_MODE_ANGULAR_RATE:
++      // Set the mode
++      setpoint->mode.yaw = modeVelocity;
++      // Set the setpoint
++      setpoint->attitude.yaw     = 0.0;
++      setpoint->attitudeRate.yaw = values->yawControllerSetpoint;
++      break;
++
++    case DFALL_CONTROLLER_MODE_ANGLE:
++      // Set the modes
++      setpoint->mode.yaw = modeAbs;
++      // Set the setpoints
++      setpoint->attitude.roll     = values->yawControllerSetpoint;
++      setpoint->attitudeRate.roll = 0.0;
++      break;
++
++    case DFALL_CONTROLLER_MODE_OFF:
++      // Set the modes
++      setpoint->mode.yaw = modeDisable;
++      // Set the setpoints
++      setpoint->attitude.yaw     = 0.0;
++      setpoint->attitudeRate.yaw = 0.0;
++      break;
++
++    case DFALL_CONTROLLER_MODE_VELOCITY:
++    case DFALL_CONTROLLER_MODE_POSITION:
++    default:
++      // Set the flag that an invalid mode
++      // was requested
++      invalid_controller_mode_requested = true;
++      break;
++  }
++
++  // Set the thrust setpoint to zero
++  setpoint->thrust = 0;
++
++  // Tranfer the per-motor commands from the packet
++  // to the respective setpoints
++  // NOTES:
++  // (1) this is performed regardless of the
++  //     "z_controller_mode" because the per motor
++  //     commands can be used for correcting steady-
++  //     state offsets in {x,y,yaw}.
++  // (2) if the "z_controller_mode" is in "POSITION"
++  //     or "VELOCITY" mode, then onboard controllers
++  //     will compute the main thurst controler, and
++  //     the user is expected to fill in cmd{1,2,3,4}
++  //     with only adjustment values.
++  setpoint->cmd1 = limitUint16(values->cmd1);
++  setpoint->cmd2 = limitUint16(values->cmd2);
++  setpoint->cmd3 = limitUint16(values->cmd3);
++  setpoint->cmd4 = limitUint16(values->cmd4);
++
++  // Set everything to off and zero if an invlaid
++  // controller mode was requested
++  if (invalid_controller_mode_requested)
++  {
++    // Set the modes
++    setpoint->mode.x     = modeDisable;
++    setpoint->mode.pitch = modeDisable;
++    setpoint->mode.y     = modeDisable;
++    setpoint->mode.roll  = modeDisable;
++    setpoint->mode.z     = modeDisable;
++    setpoint->mode.yaw   = modeDisable;
++
++    // Set the setpoints
++    setpoint->position.x         = 0.0;
++    setpoint->velocity.x         = 0.0;
++    setpoint->attitude.pitch     = 0.0;
++    setpoint->attitudeRate.pitch = 0.0;
++    setpoint->position.y         = 0.0;
++    setpoint->velocity.y         = 0.0;
++    setpoint->attitude.roll      = 0.0;
++    setpoint->attitudeRate.roll  = 0.0;
++    setpoint->position.z         = 0.0;
++    setpoint->velocity.z         = 0.0;
++    setpoint->attitude.yaw       = 0.0;
++    setpoint->attitudeRate.yaw   = 0.0;
++  }
++
++  // Turn on the "dfall mode adjustments"
++  setpoint->useDfallAdjustmentsToControllerPID = true;
+ }
+ 
+  /* ---===== 3 - packetDecoders array =====--- */
+@@ -377,6 +703,7 @@ const static packetDecoder_t packetDecoders[] = {
+   [hoverType]         = hoverDecoder,
+   [fullStateType]     = fullStateDecoder,
+   [positionType]      = positionDecoder,
++  [dfallType]         = dfallDecoder,
+ };
+ 
+ /* Decoder switch */
+diff --git a/src/modules/src/power_distribution_stock.c b/src/modules/src/power_distribution_stock.c
+index d3b7d8d..072a699 100644
+--- a/src/modules/src/power_distribution_stock.c
++++ b/src/modules/src/power_distribution_stock.c
+@@ -80,18 +80,18 @@ void powerDistribution(const control_t *control)
+   #ifdef QUAD_FORMATION_X
+     int16_t r = control->roll / 2.0f;
+     int16_t p = control->pitch / 2.0f;
+-    motorPower.m1 = limitThrust(control->thrust - r + p + control->yaw);
+-    motorPower.m2 = limitThrust(control->thrust - r - p - control->yaw);
+-    motorPower.m3 =  limitThrust(control->thrust + r - p + control->yaw);
+-    motorPower.m4 =  limitThrust(control->thrust + r + p - control->yaw);
++    motorPower.m1 = limitThrust(control->cmd1 - r + p + control->yaw);
++    motorPower.m2 = limitThrust(control->cmd2 - r - p - control->yaw);
++    motorPower.m3 = limitThrust(control->cmd3 + r - p + control->yaw);
++    motorPower.m4 = limitThrust(control->cmd4 + r + p - control->yaw);
+   #else // QUAD_FORMATION_NORMAL
+-    motorPower.m1 = limitThrust(control->thrust + control->pitch +
++    motorPower.m1 = limitThrust(control->cmd1 + control->pitch +
+                                control->yaw);
+-    motorPower.m2 = limitThrust(control->thrust - control->roll -
++    motorPower.m2 = limitThrust(control->cmd2 - control->roll -
+                                control->yaw);
+-    motorPower.m3 =  limitThrust(control->thrust - control->pitch +
++    motorPower.m3 = limitThrust(control->cmd3 - control->pitch +
+                                control->yaw);
+-    motorPower.m4 =  limitThrust(control->thrust + control->roll -
++    motorPower.m4 = limitThrust(control->cmd4 + control->roll -
+                                control->yaw);
+   #endif
+ 
+@@ -117,11 +117,11 @@ PARAM_ADD(PARAM_UINT16, m1, &motorPowerSet.m1)
+ PARAM_ADD(PARAM_UINT16, m2, &motorPowerSet.m2)
+ PARAM_ADD(PARAM_UINT16, m3, &motorPowerSet.m3)
+ PARAM_ADD(PARAM_UINT16, m4, &motorPowerSet.m4)
+-PARAM_GROUP_STOP(ring)
++PARAM_GROUP_STOP(motorPowerSet)
+ 
+ LOG_GROUP_START(motor)
+-LOG_ADD(LOG_INT32, m4, &motorPower.m4)
+ LOG_ADD(LOG_INT32, m1, &motorPower.m1)
+ LOG_ADD(LOG_INT32, m2, &motorPower.m2)
+ LOG_ADD(LOG_INT32, m3, &motorPower.m3)
++LOG_ADD(LOG_INT32, m4, &motorPower.m4)
+ LOG_GROUP_STOP(motor)
+diff --git a/src/modules/src/stabilizer.c b/src/modules/src/stabilizer.c
+index 372ec94..cb4f848 100644
+--- a/src/modules/src/stabilizer.c
++++ b/src/modules/src/stabilizer.c
+@@ -92,6 +92,10 @@ static struct {
+   int16_t ax;
+   int16_t ay;
+   int16_t az;
++  // attitude - milliradians
++  int16_t roll;
++  int16_t pitch;
++  int16_t yaw;
+   // compressed quaternion, see quatcompress.h
+   int32_t quat;
+   // angular velocity - milliradians / sec
+@@ -151,6 +155,11 @@ static void compressState()
+   stateCompressed.ay = state.acc.y * 9.81f * 1000.0f;
+   stateCompressed.az = (state.acc.z + 1) * 9.81f * 1000.0f;
+ 
++  float const deg2millirad = ((float)M_PI * 1000.0f) / 180.0f;
++  stateCompressed.roll = state.attitude.roll * deg2millirad;
++  stateCompressed.pitch = state.attitude.pitch * deg2millirad;
++  stateCompressed.yaw = state.attitude.yaw * deg2millirad;
++
+   float const q[4] = {
+     state.attitudeQuaternion.x,
+     state.attitudeQuaternion.y,
+@@ -158,7 +167,7 @@ static void compressState()
+     state.attitudeQuaternion.w};
+   stateCompressed.quat = quatcompress(q);
+ 
+-  float const deg2millirad = ((float)M_PI * 1000.0f) / 180.0f;
++  //float const deg2millirad = ((float)M_PI * 1000.0f) / 180.0f;
+   stateCompressed.rateRoll = sensorData.gyro.x * deg2millirad;
+   stateCompressed.ratePitch = -sensorData.gyro.y * deg2millirad;
+   stateCompressed.rateYaw = sensorData.gyro.z * deg2millirad;
+@@ -670,6 +679,10 @@ LOG_ADD(LOG_INT16, ax, &stateCompressed.ax)               // acceleration - mm /
+ LOG_ADD(LOG_INT16, ay, &stateCompressed.ay)
+ LOG_ADD(LOG_INT16, az, &stateCompressed.az)
+ 
++LOG_ADD(LOG_INT16, roll, &stateCompressed.roll)           // attitude - milliradians
++LOG_ADD(LOG_INT16, pitch, &stateCompressed.pitch)
++LOG_ADD(LOG_INT16, yaw, &stateCompressed.yaw)
++
+ LOG_ADD(LOG_UINT32, quat, &stateCompressed.quat)           // compressed quaternion, see quatcompress.h
+ 
+ LOG_ADD(LOG_INT16, rateRoll, &stateCompressed.rateRoll)   // angular velocity - milliradians / sec

@@ -1,0 +1,27 @@
+<launch>
+
+	<!-- INPUT ARGUMENT OF THE AGENT's ID -->
+	<arg name="agentID" default="$(optenv DFALL_DEFAULT_AGENT_ID)" />
+
+	<!-- Example of how to use the value in agentID -->
+    <!-- <param name="param" value="$(arg agentID)"/> -->
+
+    <!-- Example of how to specify the agentID from command line -->
+    <!-- roslaunch dfall_pkg agentID:=1 -->
+
+    <group ns="$(eval 'agent' + str(agentID).zfill(3))">
+
+		<!-- AGENT GUI (aka. the "student GUI") -->
+		<node
+			pkg    = "dfall_pkg"
+			name   = "FlyingAgentGUI"
+			output = "screen"
+			type   = "FlyingAgentGUI"
+			>
+			<param name="type"     type="str"  value="agent" />
+			<param name="agentID"  value="$(arg agentID)" />
+		</node>
+		
+	</group>
+
+</launch>

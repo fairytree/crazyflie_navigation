@@ -1,0 +1,5 @@
+bool isFirstControllerCall
+FlyingVehicleState ownCrazyflie
+FlyingVehicleState[] otherCrazyflies
+---
+ControlCommand controlOutput

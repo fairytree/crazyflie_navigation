@@ -1,0 +1,11 @@
+filenames : [
+  'BatteryMonitor',
+  'FlyingAgentClientConfig',
+  'CsoneControllerService',
+  'DefaultControllerService',
+  'PickerControllerService',
+  'RemoteControllerService',
+  'StudentControllerService',
+  'TemplateControllerService',
+  'TuningControllerService'
+]
